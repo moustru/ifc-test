@@ -1,35 +1,23 @@
-import { Scene } from "three";
-import "./App.css";
-import "./ifc";
-import { type ChangeEvent, useRef, useEffect } from "react";
-import { IFCLoader } from "web-ifc-three";
-import { useIFC } from "./ifc";
+import { useEffect, useMemo, useRef } from "react";
 
-const scene = new Scene();
-
-// Sets up the IFC loading
-const ifcLoader = new IFCLoader();
+import { IFCWindow } from "./ifc";
 
 function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const IFCEntity = useMemo(() => new IFCWindow(containerRef), []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useIFC({ scene, canvasRef: canvasRef.current! });
-  });
+    IFCEntity.init();
+  }, [containerRef, IFCEntity]);
 
-  const chooseFile = (e: ChangeEvent) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const file = (e.target as any).files[0];
-    const ifcURL = URL.createObjectURL(file);
-
-    ifcLoader.load(ifcURL, (ifcModel) => scene.add(ifcModel));
+  const loadFile = (e) => {
+    IFCEntity.load(e);
   };
 
   return (
     <div className="wrapper">
-      <canvas id="ifc-canvas" ref={canvasRef} />;
-      <input type="file" id="file-input" onChange={chooseFile} />
+      <input type="file" className="file-loader" onChange={loadFile} />
+      <div id="container" ref={containerRef} />
     </div>
   );
 }

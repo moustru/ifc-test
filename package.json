@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@thatopen/components": "^2.1.2",
+    "@thatopen/fragments": "^2.1.1",
+    "@thatopen/ui": "^2.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "three": "^0.135.0",
-    "web-ifc-three": "^0.0.118"
+    "three": "^0.160.1",
+    "web-ifc": "^0.0.55"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
@@ -26,8 +29,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "typescript": "^5.2.2",
-    "vite": "^5.3.1",
-    "vite-plugin-static-copy": "^1.0.5"
+    "vite": "^5.3.1"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.18.0"

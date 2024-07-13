@@ -1,84 +1,58 @@
-import {
-  AmbientLight,
-  AxesHelper,
-  DirectionalLight,
-  GridHelper,
-  type Material,
-  PerspectiveCamera,
-  Scene,
-  WebGLRenderer,
-} from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { MutableRefObject } from "react";
+import * as OBC from "@thatopen/components";
 
-type IFCHook = {
-  scene: Scene;
-  canvasRef: HTMLCanvasElement;
-};
+export class IFCWindow {
+  containerRef: MutableRefObject<HTMLDivElement | null>;
 
-export const useIFC = ({ scene, canvasRef }: IFCHook) => {
-  const size = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
+  components = new OBC.Components();
+  worlds = this.components.get(OBC.Worlds);
 
-  const aspect = size.width / size.height;
-  const camera = new PerspectiveCamera(75, aspect);
+  world = this.worlds.create<
+    OBC.SimpleScene,
+    OBC.SimpleCamera,
+    OBC.SimpleRenderer
+  >();
 
-  camera.position.z = 15;
-  camera.position.y = 13;
-  camera.position.x = 8;
+  ifcLoader = this.components.get(OBC.IfcLoader);
 
-  //Creates the lights of the scene
-  const lightColor = 0xffffff;
+  constructor(containerRef: MutableRefObject<HTMLDivElement | null>) {
+    this.containerRef = containerRef;
+  }
 
-  const ambientLight = new AmbientLight(lightColor, 0.5);
-  scene.add(ambientLight);
+  init() {
+    this.world.scene = new OBC.SimpleScene(this.components);
+    this.world.renderer = new OBC.SimpleRenderer(
+      this.components,
+      this.containerRef.current as HTMLDivElement
+    );
 
-  const directionalLight = new DirectionalLight(lightColor, 1);
-  directionalLight.position.set(0, 10, 0);
-  directionalLight.target.position.set(-5, 0, 0);
-  scene.add(directionalLight);
-  scene.add(directionalLight.target);
+    this.world.camera = new OBC.SimpleCamera(this.components);
 
-  //Sets up the renderer, fetching the canvas of the HTML
-  // const threeCanvas = document.getElementById("ifc-canvas")!;
-  const renderer = new WebGLRenderer({
-    canvas: canvasRef,
-    alpha: true,
-  });
+    this.components.init();
 
-  renderer.setSize(size.width, size.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.world.scene.setup();
 
-  //Creates grids and axes in the scene
-  const grid = new GridHelper(50, 30);
-  scene.add(grid);
+    this.world.camera.controls.setLookAt(3, 3, 3, 0, 0, 0);
+  }
 
-  const axes = new AxesHelper();
-  (axes.material as Material).depthTest = false;
-  axes.renderOrder = 1;
-  scene.add(axes);
+  async load(e) {
+    await this.ifcLoader.setup();
 
-  //Creates the orbit controls (to navigate the scene)
-  const controls = new OrbitControls(camera, canvasRef);
-  controls.enableDamping = true;
-  controls.target.set(-2, 0, 0);
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
 
-  //Animation loop
-  const animate = () => {
-    controls.update();
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-  };
+    const reader = new FileReader();
 
-  animate();
+    reader.readAsArrayBuffer(e.target.files[0]);
 
-  //Adjust the viewport to the size of the browser
-  window.addEventListener("resize", () => {
-    size.width = window.innerWidth;
-    size.height = window.innerHeight;
-    camera.aspect = size.width / size.height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(size.width, size.height);
-  });
-};
+    reader.onloadend = async function (evt) {
+      const arrayBuffer = evt.target?.result;
+      const array = new Uint8Array(arrayBuffer as ArrayBuffer);
+      const group = await that.ifcLoader.load(array);
+
+      that.world.scene.three.add(group);
+
+      console.log(group);
+    };
+  }
+}
