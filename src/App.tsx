@@ -10,13 +10,13 @@ function App() {
   }, [containerRef, IFCEntity]);
 
   const loadFile = (e: CustomEvent<HTMLInputElement>) => {
-    // @ts-expect-error - Не видит files в EventTarget, хоть убей
-    IFCEntity.load(e.target!.files[0]);
+    IFCEntity.load(e);
   };
 
   return (
     <div className="wrapper">
-      <input type="file" className="file-loader" onChange={() => loadFile} />
+      {/* @ts-expect-error - Несоответствие типов, разобраться позже */}
+      <input type="file" className="file-loader" onChange={loadFile} />
       <div id="container" ref={containerRef} />
     </div>
   );

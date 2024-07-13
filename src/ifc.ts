@@ -35,7 +35,7 @@ export class IFCWindow {
     this.world.camera.controls.setLookAt(3, 3, 3, 0, 0, 0);
   }
 
-  async load(e: File) {
+  async load(e: CustomEvent<HTMLInputElement>) {
     await this.ifcLoader.setup();
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -43,7 +43,8 @@ export class IFCWindow {
 
     const reader = new FileReader();
 
-    reader.readAsArrayBuffer(e);
+    // @ts-expect-error - Не видит files в EventTarget, хоть убей
+    reader.readAsArrayBuffer(e.target!.files[0]);
 
     reader.onloadend = async function (evt) {
       const arrayBuffer = evt.target?.result;
@@ -51,8 +52,6 @@ export class IFCWindow {
       const group = await that.ifcLoader.load(array);
 
       that.world.scene.three.add(group);
-
-      console.log(group);
     };
   }
 }
