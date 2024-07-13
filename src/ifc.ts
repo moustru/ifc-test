@@ -35,7 +35,7 @@ export class IFCWindow {
     this.world.camera.controls.setLookAt(3, 3, 3, 0, 0, 0);
   }
 
-  async load(e) {
+  async load(e: File) {
     await this.ifcLoader.setup();
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -43,7 +43,7 @@ export class IFCWindow {
 
     const reader = new FileReader();
 
-    reader.readAsArrayBuffer(e.target.files[0]);
+    reader.readAsArrayBuffer(e);
 
     reader.onloadend = async function (evt) {
       const arrayBuffer = evt.target?.result;
